@@ -10,24 +10,27 @@ document.getElementById('chat-form').addEventListener('submit', async function (
     // 清空输入框
     document.getElementById('user-input').value = '';
 
-    // 向 Hugging Face API 发送请求
-    const response = await fetch('https://api-inference.huggingface.co/models/gpt2', {
+    // 向 Hugging Face API 发送请求进行问答
+    const response = await fetch('https://api-inference.huggingface.co/models/deepset/roberta-base-squad2', {
         method: 'POST',
         headers: { 
-            'Authorization': `Bearer YOUR_HUGGINGFACE_API_KEY`, // 替换为你的 Hugging Face API 密钥
+            'Authorization': `Bearer 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`, // 替换为你的 Hugging Face API 密钥
             'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-            inputs: userInput
+            inputs: {
+                "question": userInput, // 用户输入的文本作为问题
+                "context": "My name is Clara and I live in Berkeley." // 设置一些上下文
+            }
         })
     });
 
     const data = await response.json();
     
     // 检查 API 是否返回了正确的响应
-    if (data && data[0] && data[0].generated_text) {
+    if (data && data.answer) {
         // 显示模型的响应
-        addMessage(data[0].generated_text, 'bot');
+        addMessage(data.answer, 'bot');
     } else {
         // 如果没有生成文本，显示错误信息
         addMessage("Sorry, something went wrong.", 'bot');
