@@ -10,16 +10,28 @@ document.getElementById('chat-form').addEventListener('submit', async function (
     // 清空输入框
     document.getElementById('user-input').value = '';
 
-    // 向后端发送请求
-    const response = await fetch('http://127.0.0.1:8000/generate', {
+    // 向 Hugging Face API 发送请求
+    const response = await fetch('https://api-inference.huggingface.co/models/gpt2', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: userInput })
+        headers: { 
+            'Authorization': `Bearer YOUR_HUGGINGFACE_API_KEY`, // 替换为你的 Hugging Face API 密钥
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            inputs: userInput
+        })
     });
-    const data = await response.json();
 
-    // 显示模型的响应
-    addMessage(data.generated_text, 'bot');
+    const data = await response.json();
+    
+    // 检查 API 是否返回了正确的响应
+    if (data && data[0] && data[0].generated_text) {
+        // 显示模型的响应
+        addMessage(data[0].generated_text, 'bot');
+    } else {
+        // 如果没有生成文本，显示错误信息
+        addMessage("Sorry, something went wrong.", 'bot');
+    }
 });
 
 function addMessage(text, sender) {
