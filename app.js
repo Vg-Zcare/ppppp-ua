@@ -1,3 +1,5 @@
+let conversationHistory = "";  // 用于保存动态更新的上下文
+
 document.getElementById('chat-form').addEventListener('submit', async function (e) {
     e.preventDefault();
     
@@ -10,6 +12,9 @@ document.getElementById('chat-form').addEventListener('submit', async function (
     // 清空输入框
     document.getElementById('user-input').value = '';
 
+    // 更新上下文，将新的用户输入添加到历史对话中
+    conversationHistory += `\nUser: ${userInput}`;  // 记录用户输入
+
     // 向 Hugging Face API 发送请求进行问答
     const response = await fetch('https://api-inference.huggingface.co/models/deepset/roberta-base-squad2', {
         method: 'POST',
@@ -19,8 +24,8 @@ document.getElementById('chat-form').addEventListener('submit', async function (
         },
         body: JSON.stringify({
             inputs: {
-                "question": userInput, // 用户输入的文本作为问题
-                "context": "My name is Clara and I live in Berkeley." // 设置一些上下文
+                "question": userInput,  // 用户输入的文本作为问题
+                "context": conversationHistory // 动态更新的上下文
             }
         })
     });
@@ -31,8 +36,9 @@ document.getElementById('chat-form').addEventListener('submit', async function (
     if (data && data.answer) {
         // 显示模型的响应
         addMessage(data.answer, 'bot');
+        // 将模型的回答添加到上下文
+        conversationHistory += `\nBot: ${data.answer}`;  // 记录模型的回答
     } else {
-        // 如果没有生成文本，显示错误信息
         addMessage("Sorry, something went wrong.", 'bot');
     }
 });
